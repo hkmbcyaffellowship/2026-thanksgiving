@@ -22,11 +22,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  /* ============ 基礎重置 ============ */
   * { margin:0; padding:0; box-sizing:border-box; }
   html { scroll-behavior:smooth; }
 
-  /* ============ 背景：溫暖漸層 + 飄落葉子動畫 ============ */
   body{
     min-height:100vh;
     font-family:"Kalam","Ma Shan Zheng",cursive;
@@ -40,7 +38,6 @@
     overflow-x:hidden;
   }
 
-  /* 飄落葉子 */
   .falling-leaves{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
   .leaf{position:absolute;top:-60px;font-size:26px;opacity:.75;animation:fall linear infinite;}
   @keyframes fall{
@@ -48,7 +45,6 @@
     100%{transform:translateY(110vh) rotate(360deg) translateX(40px);opacity:0;}
   }
 
-  /* ============ 頭部 ============ */
   header{
     text-align:center;
     padding:52px 20px 28px;
@@ -82,23 +78,29 @@
     box-shadow:0 4px 12px rgba(255,112,67,.4);
   }
 
-  /* ============ 瀑布流卡片牆 ============ */
+  /* ============ 瀑布流：改用 Grid ============ */
   .wall{
-    column-count:4;
-    column-gap:22px;
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    grid-auto-rows:10px;  /* 基礎行高 10px，JS 動態設 span */
+    grid-gap:0 22px;
     padding:20px 32px;
     max-width:1400px;
     margin:0 auto;
     position:relative;
     z-index:2;
   }
-  @media(max-width:1100px){ .wall{column-count:3;} }
-  @media(max-width:820px) { .wall{column-count:2;} }
-  @media(max-width:520px) { .wall{column-count:1;padding:16px;} }
+  @media(max-width:1100px){ .wall{grid-template-columns:repeat(3, 1fr);} }
+  @media(max-width:820px) { .wall{grid-template-columns:repeat(2, 1fr);} }
+  @media(max-width:520px) { .wall{grid-template-columns:1fr;padding:16px;} }
+
+  .card-wrapper{
+    position:relative;
+    margin-bottom:22px;
+    grid-row-end:span 40; /* 默認值，JS 會覆蓋 */
+  }
 
   .card{
-    break-inside:avoid;
-    margin:0 0 22px;
     border-radius:18px;
     padding:20px 18px 16px;
     position:relative;
@@ -110,7 +112,18 @@
   .card:hover{ transform:rotate(0deg) scale(1.03); box-shadow:0 12px 30px rgba(120,60,20,.28); z-index:5; }
   @keyframes popIn{ from{opacity:0;transform:scale(.6) rotate(var(--rot));} to{opacity:1;transform:scale(1) rotate(var(--rot));} }
 
-  /* 卡片頂部：頭像 + 名字 */
+  .tape{
+    position:absolute;
+    top:-12px;
+    left:50%;
+    transform:translateX(-50%) rotate(-3deg);
+    width:70px;
+    height:24px;
+    background:rgba(255,255,255,.55);
+    box-shadow:0 1px 3px rgba(0,0,0,.1);
+    z-index:3;
+  }
+
   .card-top{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
   .avatar{
     width:42px;height:42px;border-radius:50%;
@@ -122,7 +135,6 @@
   }
   .name{ font-family:"Kalam",cursive; font-size:17px; font-weight:700; }
 
-  /* 感恩事項清單 */
   .thanks-list{ list-style:none; }
   .thanks-list li{
     position:relative;
@@ -137,7 +149,6 @@
     font-size:16px;
   }
 
-  /* 卡片底部裝飾公仔 */
   .card-mascot{
     text-align:right;
     font-size:30px;
@@ -146,14 +157,6 @@
     opacity:.9;
   }
 
-  /* 紙膠帶裝飾 */
-  .tape{
-    position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(-3deg);
-    width:70px;height:24px;background:rgba(255,255,255,.45);
-    box-shadow:0 1px 3px rgba(0,0,0,.1);
-  }
-
-  /* ============ 頁腳 ============ */
   footer{
     text-align:center;
     padding:30px 20px 0;
@@ -161,23 +164,12 @@
   }
   footer p{ font-family:"Kalam",cursive; color:#bf360c; font-size:16px; opacity:.85; }
   .footer-mascots{ font-size:34px; letter-spacing:12px; margin-top:8px; }
-
-  /* ============ 提示條 ============ */
-  .hint{
-    max-width:760px;margin:0 auto 10px;padding:12px 20px;
-    background:rgba(255,255,255,.55);border:2px dashed #ff8a65;border-radius:14px;
-    font-family:"Kalam",cursive;font-size:14px;color:#bf360c;text-align:center;
-    position:relative;z-index:2;
-  }
-  .hint code{background:#fff3e0;padding:1px 6px;border-radius:5px;font-size:13px;}
 </style>
 </head>
 <body>
 
-<!-- 飄落葉子 -->
 <div class="falling-leaves" id="leaves"></div>
 
-<!-- 頭部 -->
 <header>
   <div class="header-deco">🦃</div>
   <h1>2026 感恩牆</h1>
@@ -185,27 +177,14 @@
   <div class="count-badge" id="countBadge">已收集 0 位弟兄姊妹的感恩</div>
 </header>
 
-<!-- 卡片牆 -->
 <div class="wall" id="wall"></div>
 
-<!-- 頁腳 -->
 <footer>
   <div class="footer-mascots">🍁 🎃 🌻 🦃 🕯️</div>
   <p>「凡事謝恩，因為這是神在基督耶穌裡向你們所定的旨意。」— 帖撒羅尼迦前書 5:18</p>
 </footer>
 
 <script>
-/* =========================================================
-   📋 資料區：後期把收集到的感恩事項替換這裡即可
-   ----------------------------------------------------------
-   每個物件欄位說明：
-     name   : 暱稱（頭像會自動取首字母）
-     color  : 卡片背景色（可自由選填，不填會自動輪替）
-     font   : 手寫字體（可自由選填，不填會自動輪替）
-     text   : 文字顏色（可自由選填，不填會自動輪替）
-     mascot : 卡片右下角公仔 emoji
-     items  : 感恩事項陣列（1 項、2 項或多項都可以）
-   ========================================================= */
 const thanksData = [
   {
     name:"Isabelle",
@@ -229,7 +208,7 @@ const thanksData = [
   },
   {
     name:"Teresa Zheng",
-    items:["参加了两个课程培训：一个是如何带领查经，一个是navigating finance in God’s will。感谢神让我有一颗好学上进的心","感谢神赐新的居所，很好很舒适，让家人和自己可以安然居住。感谢主在慢慢改变家人的心，让他们慢慢靠近神，希望神可以改变他们的心，最终信靠主耶稣","工作上面也慢慢有长进，越来越得到领导的认可。愿所有荣誉归给神","身体越来越健康，今年比较少病痛。感谢赞美主"]
+    items:["参加了两个课程培训：一个是如何带领查经，一个是navigating finance in God's will。感谢神让我有一颗好学上进的心","感谢神赐新的居所，很好很舒适，让家人和自己可以安然居住。感谢主在慢慢改变家人的心，让他们慢慢靠近神，希望神可以改变他们的心，最终信靠主耶稣","工作上面也慢慢有长进，越来越得到领导的认可。愿所有荣誉归给神","身体越来越健康，今年比较少病痛。感谢赞美主"]
   },
   {
     name:"Samuel",
@@ -243,18 +222,17 @@ const thanksData = [
   }
 ];
 
-/* ============ 自動輪替配色 / 字體 / 項目符號 / 公仔 ============ */
 const palette = [
-  {bg:"#ffe0b2", txt:"#bf360c"},  // 橙
-  {bg:"#fff9c4", txt:"#5d4037"},  // 嫩黃
-  {bg:"#c8e6c9", txt:"#1b5e20"},  // 綠
-  {bg:"#bbdefb", txt:"#0d47a1"},  // 藍
-  {bg:"#f8bbd0", txt:"#880e4f"},  // 粉
-  {bg:"#d7ccc8", txt:"#3e2723"},  // 棕
-  {bg:"#e1bee7", txt:"#4a148c"},  // 紫
-  {bg:"#b2ebf2", txt:"#004d40"},  // 青
-  {bg:"#ffcdd2", txt:"#b71c1c"},  // 紅
-  {bg:"#dcedc8", txt:"#33691e"}   // 草綠
+  {bg:"#ffe0b2", txt:"#bf360c"},
+  {bg:"#fff9c4", txt:"#5d4037"},
+  {bg:"#c8e6c9", txt:"#1b5e20"},
+  {bg:"#bbdefb", txt:"#0d47a1"},
+  {bg:"#f8bbd0", txt:"#880e4f"},
+  {bg:"#d7ccc8", txt:"#3e2723"},
+  {bg:"#e1bee7", txt:"#4a148c"},
+  {bg:"#b2ebf2", txt:"#004d40"},
+  {bg:"#ffcdd2", txt:"#b71c1c"},
+  {bg:"#dcedc8", txt:"#33691e"}
 ];
 const fonts = [
   "'Ma Shan Zheng',cursive",
@@ -266,11 +244,26 @@ const fonts = [
 const bullets = ["'🍁'","'🎃'","'🌻'","'🍂'","'🕯️'","'🦃'","'🌾'","'💛'"];
 const mascots = ["🐣","🦋","🐢","🦒","🦉","🐝","🐧","🦊","🐰","🐼","🦉","🐥"];
 const rots = ["-2deg","1.5deg","-1deg","2deg","-2.5deg","1deg"];
+const tapeColors = [
+  "rgba(255,255,255,.55)",
+  "rgba(255,240,200,.6)",
+  "rgba(200,230,255,.55)",
+  "rgba(220,255,220,.55)",
+  "rgba(255,220,240,.55)"
+];
 
-/* ============ 渲染卡片 ============ */
 const wall = document.getElementById("wall");
 const badge = document.getElementById("countBadge");
 let totalThanks = 0;
+
+// 用於 Grid 瀑布流的列高追蹤
+const getColumnCount = () => {
+  const w = window.innerWidth;
+  if(w <= 520) return 1;
+  if(w <= 820) return 2;
+  if(w <= 1100) return 3;
+  return 4;
+};
 
 thanksData.forEach((p, i) => {
   const c = palette[i % palette.length];
@@ -280,31 +273,82 @@ thanksData.forEach((p, i) => {
   const bullet = bullets[i % bullets.length];
   const mascot = p.mascot || mascots[i % mascots.length];
   const rot  = rots[i % rots.length];
+  const tapeColor = tapeColors[i % tapeColors.length];
+  const tapeRot = (Math.random()-0.5)*6;
   const initial = p.name.trim().charAt(0).toUpperCase();
-  // 頭像用背景色再深一點的色系
   const avaBg = c.txt;
 
   const liHTML = p.items.map(it => `<li>${it}</li>`).join("");
   totalThanks += p.items.length;
 
-  const card = document.createElement("div");
-  card.className = "card";
-  card.style.cssText = `--rot:${rot};--bullet:${bullet};background:${bg};color:${txt};font-family:${font};animation-delay:${i*0.08}s;`;
-  card.innerHTML = `
-    <div class="tape"></div>
-    <div class="card-top">
-      <div class="avatar" style="background:${avaBg}">${initial}</div>
-      <div class="name">${p.name}</div>
+  const wrapper = document.createElement("div");
+  wrapper.className = "card-wrapper";
+  wrapper.style.animationDelay = `${i*0.08}s`;
+  wrapper.innerHTML = `
+    <div class="tape" style="background:${tapeColor};transform:translateX(-50%) rotate(${tapeRot}deg);"></div>
+    <div class="card" style="--rot:${rot};--bullet:${bullet};background:${bg};color:${txt};font-family:${font};animation-delay:${i*0.08}s;">
+      <div class="card-top">
+        <div class="avatar" style="background:${avaBg}">${initial}</div>
+        <div class="name">${p.name}</div>
+      </div>
+      <ul class="thanks-list">${liHTML}</ul>
+      <div class="card-mascot">${mascot}</div>
     </div>
-    <ul class="thanks-list">${liHTML}</ul>
-    <div class="card-mascot">${mascot}</div>
   `;
-  wall.appendChild(card);
+  wall.appendChild(wrapper);
+});
+
+// Grid 瀑布流：計算每張卡片高度並設置 grid-row-end span
+function layoutGrid(){
+  const wrappers = wall.querySelectorAll('.card-wrapper');
+  const colCount = getColumnCount();
+  const colHeights = new Array(colCount).fill(0);
+  const wallLeft = wall.getBoundingClientRect().left;
+  const colWidth = wall.clientWidth / colCount;
+  const gap = 22;
+
+  wrappers.forEach(wrapper => {
+    const rect = wrapper.getBoundingClientRect();
+    // 找到最短的列
+    const shortestCol = colHeights.indexOf(Math.min(...colHeights));
+    // 設置位置
+    const x = shortestCol * (colWidth + gap);
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = x + 'px';
+    wrapper.style.top = colHeights[shortestCol] + 'px';
+    wrapper.style.width = colWidth + 'px';
+    // 更新列高
+    colHeights[shortestCol] += wrapper.offsetHeight + 22;
+  });
+  // 設置 wall 高度
+  wall.style.height = Math.max(...colHeights) + 'px';
+}
+
+// 等待字體加載後佈局
+document.fonts.ready.then(() => {
+  layoutGrid();
+});
+
+// 窗口大小改變時重新佈局
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // 重置位置
+    const wrappers = wall.querySelectorAll('.card-wrapper');
+    wrappers.forEach(w => {
+      w.style.position = '';
+      w.style.left = '';
+      w.style.top = '';
+      w.style.width = '';
+    });
+    wall.style.height = '';
+    layoutGrid();
+  }, 250);
 });
 
 badge.textContent = `已收集 ${thanksData.length} 位弟兄姊妹的感恩（共 ${totalThanks} 件）`;
 
-/* ============ 生成飄落葉子 ============ */
 const leavesBox = document.getElementById("leaves");
 const leafEmoji = ["🍁","🍂","🍃"];
 for(let i=0;i<22;i++){
