@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YAF團契 · 感恩牆 🍂</title>
+
+<!-- ====== 社交預覽（部署後把 yourname / repo 換成真實網址） ====== -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="YAF團契 · 感恩牆 🍂">
+<meta property="og:description" content="YAF團契 · 感恩牆 🍂">
+<meta property="og:url" content="https://samuelpeids2024.github.io/YAFMyLife">
+<meta property="og:image" content="https://samuelpeids2024.github.io/YAFMyLife/sw.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="YAF團契 · 感恩牆 🍂">
+<meta name="twitter:description" content="YAF團契 · 感恩牆 🍂">
+<meta name="twitter:image" content="https://samuelpeids2024.github.io/YAFMyLife/sw.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Zhi+Mang+Xing&family=Liu+Jian+Mao+Cao&family=Long+Cang&family=Kalam:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  /* ============ 基礎重置 ============ */
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+
+  /* ============ 背景：溫暖漸層 + 飄落葉子動畫 ============ */
+  body{
+    min-height:100vh;
+    font-family:"Kalam","Ma Shan Zheng",cursive;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(255,183,77,.28) 0%, transparent 45%),
+      radial-gradient(circle at 85% 15%, rgba(255,138,101,.22) 0%, transparent 40%),
+      radial-gradient(circle at 50% 90%, rgba(255,213,79,.18) 0%, transparent 50%),
+      linear-gradient(160deg,#fff3e0 0%,#ffe0b2 40%,#ffcc80 100%);
+    background-attachment:fixed;
+    padding:0 0 60px;
+    overflow-x:hidden;
+  }
+
+  /* 飄落葉子 */
+  .falling-leaves{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .leaf{position:absolute;top:-60px;font-size:26px;opacity:.75;animation:fall linear infinite;}
+  @keyframes fall{
+    0%  {transform:translateY(0) rotate(0deg) translateX(0);opacity:.8;}
+    100%{transform:translateY(110vh) rotate(360deg) translateX(40px);opacity:0;}
+  }
+
+  /* ============ 頭部 ============ */
+  header{
+    text-align:center;
+    padding:52px 20px 28px;
+    position:relative;
+    z-index:2;
+  }
+  .header-deco{font-size:44px;animation:wiggle 3s ease-in-out infinite;}
+  @keyframes wiggle{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+  header h1{
+    font-family:"Ma Shan Zheng",cursive;
+    font-size:clamp(34px,6vw,60px);
+    color:#bf360c;
+    text-shadow:2px 2px 0 #ffe0b2, 4px 4px 0 rgba(191,54,12,.12);
+    margin:10px 0 6px;
+    letter-spacing:3px;
+  }
+  header .subtitle{
+    font-family:"Kalam",cursive;
+    font-size:clamp(15px,2.5vw,20px);
+    color:#e65100;
+    opacity:.9;
+  }
+  .count-badge{
+    display:inline-block;
+    margin-top:16px;
+    background:#ff8a65;
+    color:#fff;
+    padding:6px 22px;
+    border-radius:30px;
+    font-size:16px;
+    box-shadow:0 4px 12px rgba(255,112,67,.4);
+  }
+
+  /* ============ 瀑布流卡片牆 ============ */
+  .wall{
+    column-count:4;
+    column-gap:22px;
+    padding:20px 32px;
+    max-width:1400px;
+    margin:0 auto;
+    position:relative;
+    z-index:2;
+  }
+  @media(max-width:1100px){ .wall{column-count:3;} }
+  @media(max-width:820px) { .wall{column-count:2;} }
+  @media(max-width:520px) { .wall{column-count:1;padding:16px;} }
+
+  .card{
+    break-inside:avoid;
+    margin:0 0 22px;
+    border-radius:18px;
+    padding:20px 18px 16px;
+    position:relative;
+    box-shadow:0 6px 18px rgba(120,60,20,.18), 0 2px 4px rgba(120,60,20,.1);
+    transform:rotate(var(--rot));
+    transition:transform .25s ease, box-shadow .25s ease;
+    animation:popIn .6s ease backwards;
+  }
+  .card:hover{ transform:rotate(0deg) scale(1.03); box-shadow:0 12px 30px rgba(120,60,20,.28); z-index:5; }
+  @keyframes popIn{ from{opacity:0;transform:scale(.6) rotate(var(--rot));} to{opacity:1;transform:scale(1) rotate(var(--rot));} }
+
+  /* 卡片頂部：頭像 + 名字 */
+  .card-top{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .avatar{
+    width:42px;height:42px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Kalam",cursive;font-weight:700;font-size:20px;
+    color:#fff;flex-shrink:0;
+    box-shadow:0 2px 6px rgba(0,0,0,.18);
+    text-shadow:1px 1px 0 rgba(0,0,0,.15);
+  }
+  .name{ font-family:"Kalam",cursive; font-size:17px; font-weight:700; }
+
+  /* 感恩事項清單 */
+  .thanks-list{ list-style:none; }
+  .thanks-list li{
+    position:relative;
+    padding:5px 0 5px 26px;
+    line-height:1.55;
+    font-size:16px;
+  }
+  .thanks-list li::before{
+    content:var(--bullet);
+    position:absolute;
+    left:0; top:4px;
+    font-size:16px;
+  }
+
+  /* 卡片底部裝飾公仔 */
+  .card-mascot{
+    text-align:right;
+    font-size:30px;
+    margin-top:8px;
+    line-height:1;
+    opacity:.9;
+  }
+
+  /* 紙膠帶裝飾 */
+  .tape{
+    position:absolute;top:-12px;left:50%;transform:translateX(-50%) rotate(-3deg);
+    width:70px;height:24px;background:rgba(255,255,255,.45);
+    box-shadow:0 1px 3px rgba(0,0,0,.1);
+  }
+
+  /* ============ 頁腳 ============ */
+  footer{
+    text-align:center;
+    padding:30px 20px 0;
+    position:relative;z-index:2;
+  }
+  footer p{ font-family:"Kalam",cursive; color:#bf360c; font-size:16px; opacity:.85; }
+  .footer-mascots{ font-size:34px; letter-spacing:12px; margin-top:8px; }
+
+  /* ============ 提示條 ============ */
+  .hint{
+    max-width:760px;margin:0 auto 10px;padding:12px 20px;
+    background:rgba(255,255,255,.55);border:2px dashed #ff8a65;border-radius:14px;
+    font-family:"Kalam",cursive;font-size:14px;color:#bf360c;text-align:center;
+    position:relative;z-index:2;
+  }
+  .hint code{background:#fff3e0;padding:1px 6px;border-radius:5px;font-size:13px;}
+</style>
+</head>
+<body>
+
+<!-- 飄落葉子 -->
+<div class="falling-leaves" id="leaves"></div>
+
+<!-- 頭部 -->
+<header>
+  <div class="header-deco">🦃</div>
+  <h1>感恩牆</h1>
+  <div class="subtitle">YAF 團契 · 這個季節，我們一起數算恩典</div>
+  <div class="count-badge" id="countBadge">已收集 0 位弟兄姊妹的感恩</div>
+</header>
+
+<!-- 卡片牆 -->
+<div class="wall" id="wall"></div>
+
+<!-- 頁腳 -->
+<footer>
+  <div class="footer-mascots">🍁 🎃 🌻 🦃 🕯️</div>
+  <p>「凡事謝恩，因為這是神在基督耶穌裡向你們所定的旨意。」— 帖撒羅尼迦前書 5:18</p>
+</footer>
+
+<script>
+/* =========================================================
+   📋 資料區：後期把收集到的感恩事項替換這裡即可
+   ----------------------------------------------------------
+   每個物件欄位說明：
+     name   : 暱稱（頭像會自動取首字母）
+     color  : 卡片背景色（可自由選填，不填會自動輪替）
+     font   : 手寫字體（可自由選填，不填會自動輪替）
+     text   : 文字顏色（可自由選填，不填會自動輪替）
+     mascot : 卡片右下角公仔 emoji
+     items  : 感恩事項陣列（1 項、2 項或多項都可以）
+   ========================================================= */
+const thanksData = [
+  {
+    name:"Isabelle",
+    items:["神带领换了工作","神带领搬了家，新的住所很感恩","弟兄姐妹给庆生 非常感动和感恩 2026真的是很大恩典 感谢神 感谢亲爱的团契小家"]
+  },
+  {
+    name:"Timothy Yau",
+    color:"#fff9c4", font:"'Liu Jian Mao Cao',cursive", text:"#5d4037",
+    mascot:"🐣",
+    items:["感恩可以來到西環堂事奉和大家一起同行","大學到現在的好友今日結婚了","今年各樣事奉都做得比較有效率，也已預備好之後的講章"]
+  },
+  {
+    name:"William",
+    items:["感恩神帶領我今年來到西環堂，經歷神，認識大家，融入YAF這個大家庭，很開心。下週還有洗禮","感恩神保佑今年一路過來無病無災，家人平安健康","感恩神讓我昨天發現家附近一家很好吃的糖水舖"]
+  },
+  {
+    name:"Ada Lau",
+    color:"#c8e6c9", font:"'Zhi Mang Xing',cursive", text:"#1b5e20",
+    mascot:"🦋",
+    items:["感恩我爸爸媽媽今年能夠決志信主","感恩我爸爸媽媽今年由年初身體病患甚至絕望，對現在能夠邁向健康正常","感恩我們這一家人團結，互相支援，感到十分幸福❤️"]
+  },
+  {
+    name:"Teresa Zheng",
+    items:["参加了两个课程培训：一个是如何带领查经，一个是navigating finance in God’s will。感谢神让我有一颗好学上进的心","感谢神赐新的居所，很好很舒适，让家人和自己可以安然居住。感谢主在慢慢改变家人的心，让他们慢慢靠近神，希望神可以改变他们的心，最终信靠主耶稣","工作上面也慢慢有长进，越来越得到领导的认可。愿所有荣誉归给神","身体越来越健康，今年比较少病痛。感谢赞美主"]
+  },
+  {
+    name:"Samuel",
+    color:"#bbdefb", font:"'Long Cang',cursive", text:"#0d47a1",
+    mascot:"🐢",
+    items:["感恩今年5月中沒有了工作，一路開始尋求神的帶領，由模糊漸漸清晰，「宣教」這個詞不斷出現，下月開始在教會全職做傳道助理，計劃下年讀神學","感恩岳父岳母今年願意信耶穌，是一個非常大的神跡，竟然支持我全職服侍","感恩YAF團契的弟兄姊妹給了我很多服侍和學習的機會，是你們讓我的生命有了很多的長進"]
+  },
+  {
+    name:"Anna Liu",
+    items:["感恩今年能顺利毕业并找到心仪的工作","感恩自己今年能来到西环堂认识大家并融入YAF","感恩神一直赐予自己智慧，面对重要选择时都能做出正确决定","感恩神赐予一年一切都很平安"]
+  },
+  {
+    name:"Esther",
+    color:"#f8bbd0", font:"'Ma Shan Zheng',cursive", text:"#880e4f",
+    mascot:"🦒",
+    items:["感謝神讓我順利畢業","感恩能在新城市安定下來","感謝朋友的陪伴和支持"]
+  },
+  {
+    name:"志明",
+    items:["感謝神醫治我受傷的膝蓋","感恩妻子一直的包容與鼓勵"]
+  },
+  {
+    name:"Joy",
+    color:"#d7ccc8", font:"'Kalam',cursive", text:"#3e2723",
+    mascot:"🦉",
+    items:["感謝主讓我看見自己的軟弱，並靠祂剛強","感恩每天清晨的陽光，提醒我新的一天有盼望"]
+  },
+  {
+    name:"以諾",
+    items:["感謝神賜予我一份穩定的工作","感恩能夠在團契服事中經歷神的帶領","感謝家人彼此相愛"]
+  },
+  {
+    name:"Rainbow",
+    color:"#b2ebf2", font:"'Liu Jian Mao Cao',cursive", text:"#004d40",
+    mascot:"🐝",
+    items:["感謝神在我迷茫時指引方向","感恩有健康的身體去服事他人"]
+  }
+];
+
+/* ============ 自動輪替配色 / 字體 / 項目符號 / 公仔 ============ */
+const palette = [
+  {bg:"#ffe0b2", txt:"#bf360c"},  // 橙
+  {bg:"#fff9c4", txt:"#5d4037"},  // 嫩黃
+  {bg:"#c8e6c9", txt:"#1b5e20"},  // 綠
+  {bg:"#bbdefb", txt:"#0d47a1"},  // 藍
+  {bg:"#f8bbd0", txt:"#880e4f"},  // 粉
+  {bg:"#d7ccc8", txt:"#3e2723"},  // 棕
+  {bg:"#e1bee7", txt:"#4a148c"},  // 紫
+  {bg:"#b2ebf2", txt:"#004d40"},  // 青
+  {bg:"#ffcdd2", txt:"#b71c1c"},  // 紅
+  {bg:"#dcedc8", txt:"#33691e"}   // 草綠
+];
+const fonts = [
+  "'Ma Shan Zheng',cursive",
+  "'Zhi Mang Xing',cursive",
+  "'Liu Jian Mao Cao',cursive",
+  "'Long Cang',cursive",
+  "'Kalam',cursive"
+];
+const bullets = ["'🍁'","'🎃'","'🌻'","'🍂'","'🕯️'","'🦃'","'🌾'","'💛'"];
+const mascots = ["🐣","🦋","🐢","🦒","🦉","🐝","🐧","🦊","🐰","🐼","🦉","🐥"];
+const rots = ["-2deg","1.5deg","-1deg","2deg","-2.5deg","1deg"];
+
+/* ============ 渲染卡片 ============ */
+const wall = document.getElementById("wall");
+const badge = document.getElementById("countBadge");
+let totalThanks = 0;
+
+thanksData.forEach((p, i) => {
+  const c = palette[i % palette.length];
+  const bg   = p.color || c.bg;
+  const txt  = p.text  || c.txt;
+  const font = p.font  || fonts[i % fonts.length];
+  const bullet = bullets[i % bullets.length];
+  const mascot = p.mascot || mascots[i % mascots.length];
+  const rot  = rots[i % rots.length];
+  const initial = p.name.trim().charAt(0).toUpperCase();
+  // 頭像用背景色再深一點的色系
+  const avaBg = c.txt;
+
+  const liHTML = p.items.map(it => `<li>${it}</li>`).join("");
+  totalThanks += p.items.length;
+
+  const card = document.createElement("div");
+  card.className = "card";
+  card.style.cssText = `--rot:${rot};--bullet:${bullet};background:${bg};color:${txt};font-family:${font};animation-delay:${i*0.08}s;`;
+  card.innerHTML = `
+    <div class="tape"></div>
+    <div class="card-top">
+      <div class="avatar" style="background:${avaBg}">${initial}</div>
+      <div class="name">${p.name}</div>
+    </div>
+    <ul class="thanks-list">${liHTML}</ul>
+    <div class="card-mascot">${mascot}</div>
+  `;
+  wall.appendChild(card);
+});
+
+badge.textContent = `已收集 ${thanksData.length} 位弟兄姊妹的感恩（共 ${totalThanks} 件）`;
+
+/* ============ 生成飄落葉子 ============ */
+const leavesBox = document.getElementById("leaves");
+const leafEmoji = ["🍁","🍂","🍃"];
+for(let i=0;i<22;i++){
+  const l = document.createElement("div");
+  l.className = "leaf";
+  l.textContent = leafEmoji[Math.floor(Math.random()*leafEmoji.length)];
+  l.style.left = Math.random()*100 + "%";
+  l.style.animationDuration = (6+Math.random()*8) + "s";
+  l.style.animationDelay = (Math.random()*10) + "s";
+  l.style.fontSize = (20+Math.random()*18) + "px";
+  leavesBox.appendChild(l);
+}
+</script>
+</body>
+</html>
